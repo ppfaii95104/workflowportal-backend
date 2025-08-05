@@ -1,0 +1,33 @@
+{
+  "name": "workflowportal-backend",
+  "version": "1.0.0",
+  "description": "Backend for Workflow Portal",
+  "type": "module",
+  "main": "dist/app.js",
+  "scripts": {
+    "dev": "tsx watch src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/yolada.c1/workflowportal-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/yolada.c1/workflowportal-backend/issues"
+  },
+  "homepage": "https://gitlab.com/yolada.c1/workflowportal-backend#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "tsx": "^4.7.0",
+    "@types/node": "^24.2.0",
+    "@types/express": "^5.0.3"
+  }
+}
