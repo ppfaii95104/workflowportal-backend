@@ -10,18 +10,18 @@ app.use(express.json());
 // 🔹 เพิ่ม CORS middleware
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend ของคุณ
+    origin: process.env.DOMAIN, // frontend ของคุณ
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
 app.get("/", (_req, res) => {
-  res.send("✅ Server is running!");
+  res.send(`✅ Server is running! Domain: ${process.env.DOMAIN}`);
 });
 
 app.use("/api", routes); // base path เป็น /api/*
 
 app.listen(port, () => {
-  console.log(`🚀 Server is running at http://localhost:${port}`);
+  console.log(`🚀 Server is running at ${process.env.DOMAIN}:${port}`);
 });
