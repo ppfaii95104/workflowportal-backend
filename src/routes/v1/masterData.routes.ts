@@ -1,11 +1,10 @@
 import { Router } from "express";
 
-import { createWorkflow } from "@/services/workflows.service.js";
 import {
   getDepartmentList,
   getEmployeeList,
   getPositionList,
-} from "@/services/masterData.service.js";
+} from "../../services/masterData.service.js";
 
 const router = Router();
 

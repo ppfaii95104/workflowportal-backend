@@ -4,8 +4,8 @@ import {
   getListWorkflow,
   getWorkflowsById,
   updateWorkflow,
-} from "@/repositories/workflows.repository.js";
-import { APIResponse } from "@/utils/APIResponse.js";
+} from "../repositories/workflows.repository.js";
+import { APIResponse } from "../utils/APIResponse.js";
 import { StatusCodes } from "http-status-codes";
 export const createWorkflow = async (_req: Request, res: Response) => {
   const data = _req.body;

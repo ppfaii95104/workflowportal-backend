@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
 
-import { APIResponse } from "@/utils/APIResponse.js";
+import { APIResponse } from "../utils/APIResponse.js";
 import { StatusCodes } from "http-status-codes";
 import {
   getDepartment,
   getEmployee,
   getPosition,
-} from "@/repositories/masterData.repository.js";
+} from "../repositories/masterData.repository.js";
 export const getDepartmentList = async (_req: Request, res: Response) => {
   const users = await getDepartment();
 

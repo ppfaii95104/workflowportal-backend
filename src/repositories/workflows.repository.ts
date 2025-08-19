@@ -1,4 +1,4 @@
-import { dbConnection } from "@/config/db.js";
+import { dbConnection } from "../config/db.js";
 import type {
   createWorkflowsBody,
   KPIFormData,
@@ -6,7 +6,7 @@ import type {
   WorkflowFormData,
   WorkflowRole,
   WorkflowStep,
-} from "@/interfaces/workflows.js";
+} from "../interfaces/workflows.js";
 
 export const createWorkflows = async (data: createWorkflowsBody) => {
   // 1️⃣ สร้างรหัส doc_id

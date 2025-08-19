@@ -1,4 +1,4 @@
-import { dbConnection } from "@/config/db.js";
+import { dbConnection } from "../config/db.js";
 
 export const getDepartment = async () => {
   const [rows] = await dbConnection.query("SELECT * FROM department");

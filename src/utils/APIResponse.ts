@@ -1,4 +1,4 @@
-import type { IPagination } from "@/interfaces/Ibase.js";
+import type { IPagination } from "../interfaces/Ibase.js";
 
 // Defining API response using Class
 export class APIResponse<T> {

@@ -5,7 +5,7 @@ import {
   getWorkflowById,
   getWorkflowList,
   updateWorkflowById,
-} from "@/services/workflows.service.js";
+} from "../../services/workflows.service.js";
 
 const router = Router();
 
