@@ -24,7 +24,7 @@ export const getEmployeeByPosition = async (id: number) => {
     [id]
   );
 
-  return rows ? rows[0] : {}; // คืนค่า index 0 หรือ null ถ้าไม่มีข้อมูล
+  return rows; // คืนค่า index 0 หรือ null ถ้าไม่มีข้อมูล
 };
 export const getEmployeeByDepartment = async (id: number) => {
   const [rows]: any[] = await dbConnection.query(
@@ -32,5 +32,5 @@ export const getEmployeeByDepartment = async (id: number) => {
     [id]
   );
 
-  return rows ? rows[0] : {}; // คืนค่า index 0 หรือ null ถ้าไม่มีข้อมูล
+  return rows; // คืนค่า index 0 หรือ null ถ้าไม่มีข้อมูล
 };
