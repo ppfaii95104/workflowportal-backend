@@ -21,6 +21,7 @@ export const createWorkflows = async (data: createWorkflowsBody) => {
     LEFT JOIN workflows w ON w.department_id = d.id
     WHERE d.id = ?
     GROUP BY d.id
+   
     `,
     [data.department_id]
   );
@@ -46,93 +47,128 @@ export const createWorkflows = async (data: createWorkflowsBody) => {
 export const getWorkflowsById = async (id: number) => {
   const [rows]: any[] = await dbConnection.query(
     `SELECT
-          w.name,
-          w.start_date,
-          JSON_ARRAYAGG(wd.department_id) AS related_departments,
-          w.responsible_position_id,
-          w.responsible_id,
-          w.flow_type,
-          w.iso_compliance,
-          w.iso_procedure_id,
-          w.objective,
-          w.start_point,
-          w.expected_result,
-          w.created_at,
-          (
-              SELECT JSON_ARRAYAGG(
-                  JSON_OBJECT(
-                      'position', wr.position,
-                      'responsibility', wr.responsibility
-                  )
-              )
-              FROM workflow_roles wr
-              WHERE wr.workflow_id = w.id
-          ) AS roles,
-          (
-              SELECT JSON_ARRAYAGG(
-                  JSON_OBJECT(
-                      'id', ws.id,
-                      'step_name', ws.step_name,
-                      'condition', ws.is_condition,
-                      'executor', ws.executor,
-                      'receiver', ws.receiver,
-                      'input_trigger', ws.input_trigger,
-                      'output_result', ws.output_result,
-                      'duration_value', ws.duration_value,
-                      'duration_unit', ws.duration_unit,
-                      'next_step', ws.next_step,
-                      'issues', ws.issues,
-                      'suggestions', ws.suggestions,
-                      'systems', (
-                          SELECT JSON_ARRAYAGG(
-                              JSON_OBJECT(
-                                  'id', sys.id,
-                                  'usage_detail', sys.usage_detail,
-                                  'links', (
-                                      SELECT JSON_ARRAYAGG(link.link)
-                                      FROM workflow_system_links link
-                                      WHERE link.step_id = ws.id
-                                  )
-                              )
-                          )
-                          FROM workflow_systems sys
-                          WHERE sys.step_id = ws.id
-                      ),
-                      'conditions', (
-                          SELECT JSON_ARRAYAGG(
-                              JSON_OBJECT(
-                                  'detail', wc.detail,
-                                  'next_step', wc.next_step
-                              )
-                          )
-                          FROM workflow_conditions wc
-                          WHERE wc.step_id = ws.id
-                      )
-                  )
-              )
-              FROM workflow_steps ws
-              WHERE ws.workflow_id = w.id
-          ) AS steps,
-          w.overall_duration_value,
-          w.overall_duration_unit,
-          w.duration_impact_factors,
-          w.workflow_impact,
-          w.doc_id,
-          (
-              SELECT JSON_ARRAYAGG(
-                  JSON_OBJECT(
-                      'name', k.name,
-                      'target', k.target,
-                      'unit', k.unit
-                  )
-              )
-              FROM workflow_kpis k
-              WHERE k.workflow_id = w.id
-          ) AS kpis
-      FROM workflows w
-      LEFT JOIN workflow_departments wd ON wd.workflow_id = w.id
-      WHERE w.id = ? -- เปลี่ยนตาม workflow ที่ต้องการ
-      GROUP BY w.id;`,
+    w.name,
+    w.start_date,
+    (
+        SELECT COALESCE(
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'department_id', d.department_id,
+                    'team_id', d.team_id
+                )
+            ),
+            JSON_ARRAY()
+        )
+        FROM workflow_departments d
+        WHERE d.workflow_id = w.id
+    ) AS related_departments,
+    w.responsible_position_id,
+    w.responsible_id,
+    w.flow_type,
+    w.iso_compliance,
+    w.iso_procedure_id,
+    w.objective,
+    w.start_point,
+    w.expected_result,
+    w.created_at,
+    w.step,
+    (
+        SELECT COALESCE(
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'position', wr.position,
+                    'responsibility', wr.responsibility
+                )
+            ),
+            JSON_ARRAY()
+        )
+        FROM workflow_roles wr
+        WHERE wr.workflow_id = w.id
+    ) AS roles,
+    (
+        SELECT COALESCE(
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'id', ws.id,
+                    'step_name', ws.step_name,
+                    'condition', ws.is_condition,
+                    'executor', ws.executor,
+                    'receiver', ws.receiver,
+                    'input_trigger', ws.input_trigger,
+                    'output_result', ws.output_result,
+                    'duration_value', ws.duration_value,
+                    'duration_unit', ws.duration_unit,
+                    'next_step', ws.next_step,
+                    'issues', ws.issues,
+                    'suggestions', ws.suggestions,
+                    'systems', (
+                        SELECT COALESCE(
+                            JSON_ARRAYAGG(
+                                JSON_OBJECT(
+                                    'id', sys.system_id,
+                                    'usage_detail', sys.usage_detail,
+                                    'links', (
+                                        SELECT COALESCE(
+                                            JSON_ARRAYAGG(link.link),
+                                            JSON_ARRAY()
+                                        )
+                                        FROM workflow_system_links link
+                                        WHERE link.step_id = ws.id
+                                    )
+                                )
+                            ),
+                            JSON_ARRAY()
+                        )
+                        FROM workflow_systems sys
+                        WHERE sys.step_id = ws.id
+                    ),
+                    'conditions', (
+                        SELECT COALESCE(
+                            JSON_ARRAYAGG(
+                                JSON_OBJECT(
+                                    'detail', wc.detail,
+                                    'next_step', wc.next_step
+                                )
+                            ),
+                            JSON_ARRAY()
+                        )
+                        FROM workflow_conditions wc
+                        WHERE wc.step_id = ws.id
+                    )
+                )
+            ),
+            JSON_ARRAY()
+        )
+        FROM workflow_steps ws
+        WHERE ws.workflow_id = w.id
+    ) AS steps,
+    w.overall_duration_value,
+    w.overall_duration_unit,
+    w.duration_impact_factors,
+    w.workflow_impact,
+    w.doc_id,
+    (
+        SELECT COALESCE(
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'name', k.name,
+                    'target', k.target,
+                    'unit', k.unit
+                )
+            ),
+            JSON_ARRAY()
+        )
+        FROM workflow_kpis k
+        WHERE k.workflow_id = w.id
+    ) AS kpis,
+    d.name AS department_name,
+    d.department_code,
+    w.updated_at,
+    w.status
+FROM workflows w
+left join department d on d.id =w.department_id
+WHERE w.id = ?;
+`,
     [id]
   );
 
@@ -217,13 +253,17 @@ export const deleteRelatedDepartments = async (workflowId: number) => {
 };
 
 export const addRelatedDepartments = async (
-  data: number[],
+  data: any[],
   workflowId: number
 ) => {
   if (data.length === 0) return;
-  const values = data.map((dep) => [workflowId, dep]);
+  const values = data.map((dep) => [
+    workflowId,
+    dep?.department_id,
+    dep?.team_id,
+  ]);
   await dbConnection.query(
-    `INSERT INTO workflow_departments (workflow_id, department_id) VALUES ?`,
+    `INSERT INTO workflow_departments (workflow_id, department_id,team_id) VALUES ?`,
     [values]
   );
 };
@@ -255,15 +295,22 @@ export const addWorkflowSystems = async (
   stepId: number
 ) => {
   for (const system of data) {
-    const [result]: any = await dbConnection.query(
+    // ถ้า system.id มีอยู่แล้ว ใช้ id เดิม
+    const systemId = system.id;
+
+    // insert workflow_systems เฉพาะครั้งแรก ถ้าต้องการ
+    await dbConnection.query(
       `INSERT INTO workflow_systems (workflow_id, step_id, system_id, usage_detail)
-       VALUES (?, ?, ?, ?)`,
-      [workflowId, stepId, system.id, system.usage_detail]
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE usage_detail = VALUES(usage_detail)`,
+      [workflowId, stepId, systemId, system.usage_detail]
     );
-    const systemId = result.insertId;
+
+    // insert link
     for (const link of system.links) {
+      if (!link) continue; // skip empty link
       await dbConnection.query(
-        `INSERT INTO workflow_system_links (workflow_id, step_id, system_id, link)
+        `INSERT IGNORE INTO workflow_system_links (workflow_id, step_id, system_id, link)
          VALUES (?, ?, ?, ?)`,
         [workflowId, stepId, systemId, link]
       );
@@ -377,6 +424,19 @@ export const getListWorkflow = async () => {
     await dbConnection.query(`SELECT w.id , w.name,doc_id, d.name department_name, w.status, w.updated_at,
     w.overall_duration_unit ,w.overall_duration_value
     from workflows w 
-    left join department d  on d.id = w.department_id`);
+    left join department d  on d.id = w.department_id
+    ORDER BY d.id DESC`);
   return rows;
+};
+export const updateWorkflowsStatusById = async (
+  data: WorkflowFormData,
+  id: number
+) => {
+  const [rows]: any[] = await dbConnection.query(
+    `UPDATE workflows
+      SET  status=?
+      WHERE id=?`,
+    [data.status ?? 1, id]
+  );
+  return { success: true };
 };

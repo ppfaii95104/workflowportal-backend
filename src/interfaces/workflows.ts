@@ -15,7 +15,7 @@ export interface WorkflowFormData {
   start_point: string; // จุดเริ่มต้นของ Workflow
   expected_result: string; // ผลลัพธ์ที่ต้องการ
   overall_duration_value: number; // ระยะเวลาโดยรวม (number ตาม mock)
-  overall_duration_unit: "H" | "D" | "W"; // หน่วยเวลาโดยรวม
+  overall_duration_unit: string; // หน่วยเวลาโดยรวม
   duration_impact_factors: string; // ปัจจัยที่ส่งผลต่อระยะเวลา
   workflow_impact: number; // mock ส่งเป็น number (1)
 

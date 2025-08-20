@@ -4,10 +4,13 @@ import { APIResponse } from "../utils/APIResponse.js";
 import { StatusCodes } from "http-status-codes";
 import {
   getDepartment,
+  getDepartmentTeam,
   getEmployee,
   getEmployeeByDepartment,
   getEmployeeByPosition,
   getPosition,
+  getPositioneByDepartment,
+  getPositionEmployee,
   getSystemTool,
 } from "../repositories/masterData.repository.js";
 export const getDepartmentList = async (_req: Request, res: Response) => {
@@ -15,13 +18,21 @@ export const getDepartmentList = async (_req: Request, res: Response) => {
 
   res.status(StatusCodes.OK).json(APIResponse.success(users));
 };
+export const getDepartmentTeamList = async (_req: Request, res: Response) => {
+  const users = await getDepartmentTeam();
 
+  res.status(StatusCodes.OK).json(APIResponse.success(users));
+};
 export const getPositionList = async (_req: Request, res: Response) => {
   const users = await getPosition();
 
   res.status(StatusCodes.OK).json(APIResponse.success(users));
 };
+export const getPositionEmployeeList = async (_req: Request, res: Response) => {
+  const users = await getPositionEmployee();
 
+  res.status(StatusCodes.OK).json(APIResponse.success(users));
+};
 export const getEmployeeList = async (_req: Request, res: Response) => {
   const users = await getEmployee();
 
@@ -93,4 +104,13 @@ export const getDataEmployeeByDepartment = async (
   }
 
   res.status(StatusCodes.OK).json(APIResponse.success(data));
+};
+export const getPositioneByDepartmentList = async (
+  _req: Request,
+  res: Response
+) => {
+  const data = _req.body;
+  const users = await getPositioneByDepartment(data);
+
+  res.status(StatusCodes.OK).json(APIResponse.success(users));
 };
