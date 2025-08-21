@@ -421,11 +421,11 @@ export const updateWorkflow = async (
 };
 export const getListWorkflow = async () => {
   const [rows] =
-    await dbConnection.query(`SELECT w.id , w.name,doc_id, d.name department_name, w.status, w.updated_at,
+    await dbConnection.query(`SELECT w.id , w.name,w.doc_id, d.name department_name, w.status, w.updated_at,
     w.overall_duration_unit ,w.overall_duration_value
     from workflows w 
     left join department d  on d.id = w.department_id
-    ORDER BY d.id DESC`);
+    ORDER BY w.updated_at DESC`);
   return rows;
 };
 export const updateWorkflowsStatusById = async (
