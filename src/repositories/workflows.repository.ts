@@ -35,7 +35,7 @@ export const createWorkflows = async (data: createWorkflowsBody) => {
   const [insertResult] = await dbConnection.query(
     `
     INSERT INTO workflows (name, department_id, created_at, doc_id,step)
-    VALUES (?, ?, NOW(), ?,1)
+    VALUES (?, ?, NOW(), ?,0)
     `,
     [data.name, data.department_id, docId]
   );
