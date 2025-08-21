@@ -295,10 +295,9 @@ export const addWorkflowSystems = async (
   stepId: number
 ) => {
   for (const system of data) {
-    // ถ้า system.id มีอยู่แล้ว ใช้ id เดิม
     const systemId = system.id;
 
-    // insert workflow_systems เฉพาะครั้งแรก ถ้าต้องการ
+    // insert workflow_systems
     await dbConnection.query(
       `INSERT INTO workflow_systems (workflow_id, step_id, system_id, usage_detail)
        VALUES (?, ?, ?, ?)
@@ -306,9 +305,10 @@ export const addWorkflowSystems = async (
       [workflowId, stepId, systemId, system.usage_detail]
     );
 
-    // insert link
-    for (const link of system.links) {
-      if (!link) continue; // skip empty link
+    // insert links safely
+    const links = Array.isArray(system.links) ? system.links : [];
+    for (const link of links) {
+      if (!link) continue;
       await dbConnection.query(
         `INSERT IGNORE INTO workflow_system_links (workflow_id, step_id, system_id, link)
          VALUES (?, ?, ?, ?)`,
