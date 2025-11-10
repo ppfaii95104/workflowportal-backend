@@ -12,60 +12,119 @@ import {
   getPositioneByDepartment,
   getPositionEmployee,
   getSystemTool,
+  getTeam,
 } from "../repositories/masterData.repository.js";
-export const getDepartmentList = async (_req: Request, res: Response) => {
-  const users = await getDepartment();
+export const getDepartmentList = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  res.status(StatusCodes.OK).json(APIResponse.success(users));
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const result = await getDepartment();
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const getDepartmentTeamList = async (_req: Request, res: Response) => {
-  const users = await getDepartmentTeam();
+export const getTeamList = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  res.status(StatusCodes.OK).json(APIResponse.success(users));
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const data = req.body;
+  const result = await getTeam(data);
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const getPositionList = async (_req: Request, res: Response) => {
-  const users = await getPosition();
+export const getDepartmentTeamList = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  res.status(StatusCodes.OK).json(APIResponse.success(users));
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const result = await getDepartmentTeam();
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const getPositionEmployeeList = async (_req: Request, res: Response) => {
-  const users = await getPositionEmployee();
+export const getPositionList = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  res.status(StatusCodes.OK).json(APIResponse.success(users));
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const data = req.body;
+  const result = await getPosition();
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const getEmployeeList = async (_req: Request, res: Response) => {
-  const users = await getEmployee();
+export const getPositionEmployeeList = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  res.status(StatusCodes.OK).json(APIResponse.success(users));
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const data = req.body;
+  const result = await getPositionEmployee(data);
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
+};
+export const getEmployeeList = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const result = await getEmployee();
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
 
-export const getSystemToolList = async (_req: Request, res: Response) => {
-  const users = await getSystemTool();
+export const getSystemToolList = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  res.status(StatusCodes.OK).json(APIResponse.success(users));
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const result = await getSystemTool();
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
 
 export const getDataEmployeeByPosition = async (
   req: Request,
   res: Response
 ) => {
-  const idParam = req.params.id;
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  // ตรวจสอบว่า id มีค่าและเป็นตัวเลข
-  if (!idParam || isNaN(Number(idParam))) {
+  if (!token) {
     return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json(
-        APIResponse.error(
-          "Missing or invalid Positio ID",
-          StatusCodes.BAD_REQUEST
-        )
-      );
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
   }
+  const body = req.body;
 
-  const id = Number(idParam); // convert เป็น number
-
-  const data = await getEmployeeByPosition(id);
+  const data = await getEmployeeByPosition(body);
 
   if (!data) {
     return res
@@ -79,6 +138,14 @@ export const getDataEmployeeByDepartment = async (
   req: Request,
   res: Response
 ) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
   const idParam = req.params.id;
 
   // ตรวจสอบว่า id มีค่าและเป็นตัวเลข
@@ -106,11 +173,19 @@ export const getDataEmployeeByDepartment = async (
   res.status(StatusCodes.OK).json(APIResponse.success(data));
 };
 export const getPositioneByDepartmentList = async (
-  _req: Request,
+  req: Request,
   res: Response
 ) => {
-  const data = _req.body;
-  const users = await getPositioneByDepartment(data);
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-  res.status(StatusCodes.OK).json(APIResponse.success(users));
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const data = req.body;
+  const result = await getPositioneByDepartment(data);
+
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };

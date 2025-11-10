@@ -10,14 +10,16 @@ import {
   getPositionEmployeeList,
   getPositionList,
   getSystemToolList,
+  getTeamList,
 } from "../../services/masterData.service.js";
 
 const router = Router();
 router.get("/employee/department/:id", getDataEmployeeByDepartment);
-router.get("/employee/position/:id", getDataEmployeeByPosition);
+router.post("/employee/position/", getDataEmployeeByPosition);
 router.get("/department/team", getDepartmentTeamList);
+router.post("/team", getTeamList);
 router.get("/department", getDepartmentList);
-router.get("/position/employee", getPositionEmployeeList);
+router.post("/position/employee", getPositionEmployeeList);
 router.get("/position", getPositionList);
 router.post("/position/department", getPositioneByDepartmentList);
 router.get("/employee", getEmployeeList);

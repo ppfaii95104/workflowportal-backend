@@ -1,28 +1,30 @@
 import { Router } from "express";
 
 import {
+  countDepartmentList,
+  countTeamtList,
   createWorkflow,
+  deleteWorkflowById,
+  duplicateDataWorkflow,
+  getPositionEmployeeListByWorkflowsId,
   getWorkflowById,
   getWorkflowList,
+  importWorkflows,
   updateWorkflowById,
   updateWorkflowStatusById,
 } from "../../services/workflows.service.js";
 
 const router = Router();
-
-// สร้าง workflow
+router.post("/list", getWorkflowList);
+router.post("/import", importWorkflows);
 router.post("/", createWorkflow);
-
-// อัปเดต status ต้องอยู่ก่อน /:id
+router.post("/count/department", countDepartmentList);
+router.post("/count/team", countTeamtList);
+router.post("/duplicate", duplicateDataWorkflow);
 router.put("/status/:id", updateWorkflowStatusById);
-
-// ดึงรายการ workflow
-router.get("/", getWorkflowList);
-
-// ดึง workflow ตาม id
+router.get("/position/employee/:id", getPositionEmployeeListByWorkflowsId);
 router.get("/:id", getWorkflowById);
-
-// อัปเดต workflow ตาม id
+router.delete("/:id", deleteWorkflowById);
 router.put("/:id", updateWorkflowById);
 
 export default router;

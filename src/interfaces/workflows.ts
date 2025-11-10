@@ -1,11 +1,14 @@
 export interface createWorkflowsBody {
   name: string;
   department_id: number;
+  created_by: number;
+  related_departments: any[];
 }
 
 export interface WorkflowFormData {
   name: string; // ชื่อ Workflow
   start_date: string; // วันที่เริ่มใช้ Workflow
+  department_id: number;
   responsible_position_id: number; // id ตำแหน่งผู้รับผิดชอบ
   responsible_id: number; // id ผู้รับผิดชอบ
   flow_type: "M" | "S"; // ประเภท Workflow
@@ -18,7 +21,7 @@ export interface WorkflowFormData {
   overall_duration_unit: string; // หน่วยเวลาโดยรวม
   duration_impact_factors: string; // ปัจจัยที่ส่งผลต่อระยะเวลา
   workflow_impact: number; // mock ส่งเป็น number (1)
-
+  frequency: string;
   kpis: KPIFormData[]; // รายการ KPI
   related_departments: number[]; // แผนกที่เกี่ยวข้อง (id)
 
@@ -26,12 +29,14 @@ export interface WorkflowFormData {
   steps: WorkflowStep[]; // รายการขั้นตอนของ Workflow
   status: number;
   step: number;
+  updated_by: number;
 }
 
 export interface SystemUsage {
   id: string;
 
   usage_detail: string;
+  system_name: string;
   links: string[];
 }
 
@@ -39,8 +44,8 @@ export interface WorkflowStep {
   id: any;
   step_name: string;
   condition: boolean;
-  executor: string;
-  receiver: string;
+  executors: string[];
+  receivers: string[];
   input_trigger: string;
   output_result: string;
   duration_value?: string; // mock บาง step ไม่มี
@@ -53,11 +58,14 @@ export interface WorkflowStep {
   next_step?: string | number;
   issues?: string;
   suggestions?: string;
+  description?: string;
 }
 
 export interface WorkflowRole {
   position: number; // ตำแหน่ง
+  name: string; // หน้าที่ความรับผิดชอบ
   responsibility: string; // หน้าที่ความรับผิดชอบ
+  uid: string; // หน้าที่ความรับผิดชอบ
 }
 
 export interface KPIFormData {

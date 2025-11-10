@@ -1,22 +1,22 @@
 import type { Request, Response } from "express";
-import {
-  countDepartment,
-  countListWorkflow,
-  countTeam,
-  countTeamById,
-  createWorkflows,
-  createWorkflowsImport,
-  deleteWorkflow,
-  duplicateWorkflow,
-  getListWorkflow,
-  getPositionEmployeeByWorkflowsId,
-  getWorkflowsById,
-  updateWorkflow,
-  updateWorkflowsStatusById,
-} from "../repositories/workflows.repository.js";
+
 import { APIResponse } from "../utils/APIResponse.js";
 import { StatusCodes } from "http-status-codes";
-export const createWorkflow = async (req: Request, res: Response) => {
+
+import {
+  createDepartment,
+  createPosition,
+  deleteDepartment,
+  deletePosition,
+  getDepartmentById,
+  getListDepartment,
+  getPositionById,
+  getPositionByTeamId,
+  getTeamById,
+  updateDataPosition,
+  updateDepartment,
+} from "../repositories/department.repository.js";
+export const getDepartmentList = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -26,11 +26,61 @@ export const createWorkflow = async (req: Request, res: Response) => {
       .json(APIResponse.error("Access token required"));
   }
   const data = req.body;
-  const result = await createWorkflows(data);
+  const reslut = await getListDepartment(data);
 
-  res.status(StatusCodes.OK).json(APIResponse.success(result));
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
 };
-export const getWorkflowById = async (req: Request, res: Response) => {
+
+export const createDataDepartment = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const data = req.body;
+  const reslut = await createDepartment(data);
+
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
+};
+export const getDataDepartmentById = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const idParam = req.params.id;
+
+  // ตรวจสอบว่า id มีค่าและเป็นตัวเลข
+  if (!idParam || isNaN(Number(idParam))) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json(
+        APIResponse.error(
+          "Missing or invalid Department ID",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+  }
+
+  const id = Number(idParam); // convert เป็น number
+
+  const reslut = await getDepartmentById(id);
+
+  if (!reslut) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json(APIResponse.error("Department not found", StatusCodes.NOT_FOUND));
+  }
+
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
+};
+export const updateDepartmentById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -54,7 +104,8 @@ export const getWorkflowById = async (req: Request, res: Response) => {
   }
 
   const id = Number(idParam); // convert เป็น number
-  const result = await getWorkflowsById(id);
+  const data = req.body;
+  const result = await updateDepartment(id, data);
 
   if (!result) {
     return res
@@ -64,7 +115,7 @@ export const getWorkflowById = async (req: Request, res: Response) => {
 
   res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const updateWorkflowById = async (req: Request, res: Response) => {
+export const deleteDepartmentById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -88,18 +139,11 @@ export const updateWorkflowById = async (req: Request, res: Response) => {
   }
 
   const id = Number(idParam); // convert เป็น number
-  const data = req.body;
-  const result = await updateWorkflow(id, data);
-
-  if (!result) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json(APIResponse.error("Workflow not found", StatusCodes.NOT_FOUND));
-  }
+  const result = await deleteDepartment(id);
 
   res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const getWorkflowList = async (req: Request, res: Response) => {
+export const getDataPositionByTeamId = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -108,17 +152,35 @@ export const getWorkflowList = async (req: Request, res: Response) => {
       .status(StatusCodes.UNAUTHORIZED)
       .json(APIResponse.error("Access token required"));
   }
-  const data = req.body;
-  const result = await getListWorkflow(data);
-  const count = await countListWorkflow(data);
+  const idParam = req.params.id;
+
+  // ตรวจสอบว่า id มีค่าและเป็นตัวเลข
+  if (!idParam || isNaN(Number(idParam))) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json(
+        APIResponse.error(
+          "Missing or invalid Department ID",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+  }
+
+  const id = Number(idParam); // convert เป็น number
+  const team = await getTeamById(id);
+  const reslut = await getPositionByTeamId(id);
+
+  if (!reslut || !team) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json(APIResponse.error("Department not found", StatusCodes.NOT_FOUND));
+  }
+
   res
     .status(StatusCodes.OK)
-    .json(
-      APIResponse.successWithPaging(result, { ...data, total: count.total })
-    );
+    .json(APIResponse.success({ ...team, position_list: reslut }));
 };
-
-export const updateWorkflowStatusById = async (req: Request, res: Response) => {
+export const updatePositionById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -143,7 +205,8 @@ export const updateWorkflowStatusById = async (req: Request, res: Response) => {
 
   const id = Number(idParam); // convert เป็น number
   const data = req.body;
-  const result = await updateWorkflowsStatusById(data, id);
+  console.log("🚀 ~ updatePositionById ~ req.body:", req.body);
+  const result = await updateDataPosition(id, data);
 
   if (!result) {
     return res
@@ -153,7 +216,7 @@ export const updateWorkflowStatusById = async (req: Request, res: Response) => {
 
   res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const importWorkflows = async (req: Request, res: Response) => {
+export const creaetePositionById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -162,23 +225,9 @@ export const importWorkflows = async (req: Request, res: Response) => {
       .status(StatusCodes.UNAUTHORIZED)
       .json(APIResponse.error("Access token required"));
   }
+
   const data = req.body;
-  const result = await createWorkflowsImport(data?.data, data?.created_by);
-
-  res.status(StatusCodes.OK).json(APIResponse.success(result));
-};
-
-export const duplicateDataWorkflow = async (req: Request, res: Response) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
-
-  if (!token) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json(APIResponse.error("Access token required"));
-  }
-  const data = req.body;
-  const result = await duplicateWorkflow(data);
+  const result = await createPosition(data);
 
   if (!result) {
     return res
@@ -188,7 +237,8 @@ export const duplicateDataWorkflow = async (req: Request, res: Response) => {
 
   res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const deleteWorkflowById = async (req: Request, res: Response) => {
+
+export const getDataPositionById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -205,54 +255,25 @@ export const deleteWorkflowById = async (req: Request, res: Response) => {
       .status(StatusCodes.BAD_REQUEST)
       .json(
         APIResponse.error(
-          "Missing or invalid result ID",
+          "Missing or invalid Department ID",
           StatusCodes.BAD_REQUEST
         )
       );
   }
 
   const id = Number(idParam); // convert เป็น number
-  const result = await deleteWorkflow(id);
 
-  res.status(StatusCodes.OK).json(APIResponse.success(result));
-};
-export const countDepartmentList = async (req: Request, res: Response) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+  const reslut = await getPositionById(id);
 
-  if (!token) {
+  if (!reslut) {
     return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json(APIResponse.error("Access token required"));
+      .status(StatusCodes.NOT_FOUND)
+      .json(APIResponse.error("Department not found", StatusCodes.NOT_FOUND));
   }
-  const result = await countDepartment();
 
-  res.status(StatusCodes.OK).json(APIResponse.success(result));
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
 };
-export const countTeamtList = async (req: Request, res: Response) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
-
-  if (!token) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json(APIResponse.error("Access token required"));
-  }
-  const data = req.body;
-  const body: any = {};
-  const result = await countTeam(data);
-  body.list_team = result;
-  if (data?.department_id) {
-    const result2 = await countTeamById(data?.department_id);
-    body.department = result2;
-  }
-  res.status(StatusCodes.OK).json(APIResponse.success(body));
-};
-
-export const getPositionEmployeeListByWorkflowsId = async (
-  req: Request,
-  res: Response
-) => {
+export const deleteDataPositionById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -269,7 +290,7 @@ export const getPositionEmployeeListByWorkflowsId = async (
       .status(StatusCodes.BAD_REQUEST)
       .json(
         APIResponse.error(
-          "Missing or invalid result ID",
+          "Missing or invalid Department ID",
           StatusCodes.BAD_REQUEST
         )
       );
@@ -277,13 +298,13 @@ export const getPositionEmployeeListByWorkflowsId = async (
 
   const id = Number(idParam); // convert เป็น number
 
-  const result = await getPositionEmployeeByWorkflowsId(id);
+  const reslut = await deletePosition(id);
 
-  if (!result) {
+  if (!reslut) {
     return res
       .status(StatusCodes.NOT_FOUND)
-      .json(APIResponse.error("Workflow not found", StatusCodes.NOT_FOUND));
+      .json(APIResponse.error("Department not found", StatusCodes.NOT_FOUND));
   }
 
-  res.status(StatusCodes.OK).json(APIResponse.success(result));
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
 };

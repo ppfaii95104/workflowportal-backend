@@ -1,10 +1,10 @@
 import type { employeeBody } from "../interfaces/employee.js";
 import { dbConnection } from "../config/db.js";
 
-export const createUser = async (data: employeeBody) => {
+export const createEmployee = async (data: employeeBody) => {
   const [insertResult] = await dbConnection.query(
     `
-     INSERT INTO user
+     INSERT INTO employee
      (name_th, 
      name_en, 
      department_id, 
@@ -37,13 +37,13 @@ export const createUser = async (data: employeeBody) => {
       data?.job_band,
     ]
   );
-  const userId = (insertResult as any).insertId;
+  const employeeId = (insertResult as any).insertId;
 
   // คืนค่า insertId หรือ docId ก็ได้
-  return { id: userId };
+  return { id: employeeId };
 };
 
-export const getUserById = async (id: number) => {
+export const getEmployeeById = async (id: number) => {
   const [rows]: any[] = await dbConnection.query(
     `SELECT e.id,
        e.name_th, 
@@ -71,11 +71,11 @@ export const getUserById = async (id: number) => {
                'email', r.email
            )
        ) AS report_to_info
-    FROM user e
+    FROM employee e
     LEFT JOIN department d ON e.department_id = d.id
     LEFT JOIN department_team dt ON dt.id = e.team_id
     LEFT JOIN position p ON p.id = e.position_id
-    LEFT JOIN user r ON FIND_IN_SET(r.id, e.report_to)  -- 👈 join ตรงนี้
+    LEFT JOIN employee r ON FIND_IN_SET(r.id, e.report_to)  -- 👈 join ตรงนี้
     WHERE e.id = ?
     GROUP BY e.id;;
      `,
@@ -84,7 +84,7 @@ export const getUserById = async (id: number) => {
 
   return rows ? rows[0] : {}; // คืนค่า index 0 หรือ null ถ้าไม่มีข้อมูล
 };
-export const getListUser = async (body: any) => {
+export const getListEmployee = async (body: any) => {
   let query = `SELECT e.id,
        e.name_th, 
        e.name_en, 
@@ -103,7 +103,7 @@ export const getListUser = async (body: any) => {
        d.name AS department_name,
        dt.name  AS team_name,
        p.name AS position_name
-    FROM user e
+    FROM employee e
     LEFT JOIN department d ON e.department_id = d.id
     LEFT JOIN department_team dt ON dt.id = e.team_id
     LEFT JOIN position p ON p.id = e.position_id
@@ -122,9 +122,9 @@ export const getListUser = async (body: any) => {
   return rows;
 };
 
-export const updateUser = async (id: number, data: employeeBody) => {
+export const updateEmployee = async (id: number, data: employeeBody) => {
   const [rows]: any[] = await dbConnection.query(
-    `UPDATE user
+    `UPDATE employee
       SET name_th=?, 
           name_en=?, 
           department_id=?, 
@@ -136,7 +136,6 @@ export const updateUser = async (id: number, data: employeeBody) => {
           team_id=?, 
           job_band=?,
           updated_by =?,
-          avatar=?,
           updated_at=current_timestamp()
       WHERE id= ?`,
     [
@@ -151,14 +150,13 @@ export const updateUser = async (id: number, data: employeeBody) => {
       data?.team_id,
       data?.job_band,
       data?.updated_by,
-      data?.avatar,
       id,
     ]
   );
   return { success: true };
 };
-export const deleteUser = async (id: number) => {
-  await dbConnection.query("DELETE FROM user WHERE id=?;", [id]);
+export const deleteEmployee = async (id: number) => {
+  await dbConnection.query("DELETE FROM employee WHERE id=?;", [id]);
 
   return { success: true };
 };

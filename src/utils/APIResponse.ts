@@ -5,20 +5,20 @@ export class APIResponse<T> {
   status: number;
   message: string;
   data: T | undefined; // <- แก้ตรงนี้
-  paging?: IPagination | undefined;
+  pagination?: IPagination | undefined;
   error?: string | undefined;
 
   constructor(
     status: number,
     message: string,
     data?: T,
-    paging?: IPagination,
+    pagination?: IPagination,
     error?: string
   ) {
     this.status = status;
     this.message = message;
     this.data = data;
-    this.paging = paging;
+    this.pagination = pagination;
     this.error = error;
   }
 
@@ -34,8 +34,11 @@ export class APIResponse<T> {
     return new APIResponse(200, "Success", data);
   }
 
-  static successWithPaging<T>(data: T, paging: IPagination): APIResponse<T> {
-    return new APIResponse(200, "Success", data, paging);
+  static successWithPaging<T>(
+    data: T,
+    pagination: IPagination
+  ): APIResponse<T> {
+    return new APIResponse(200, "Success", data, pagination);
   }
 
   static successWithMessage<T>(message: string, data: T): APIResponse<T> {

@@ -18,5 +18,5 @@
     "skipLibCheck": true,
     "baseUrl": "./src",
   },
-  "include": ["src"]
+  "include": ["src", "src/repositories/.repository copy.ts"]
 }
