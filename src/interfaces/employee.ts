@@ -17,4 +17,5 @@ export interface employeeBody {
   updated_by: number;
   job_band: number;
   avatar: string;
+  role?: number;
 }

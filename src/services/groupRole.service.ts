@@ -2,16 +2,15 @@ import type { Request, Response } from "express";
 
 import { APIResponse } from "../utils/APIResponse.js";
 import { StatusCodes } from "http-status-codes";
-
 import {
-  createEmployee,
-  deleteEmployee,
-  getEmployeeById,
-  getListEmployee,
-  countListEmployee,
-  updateEmployee,
-} from "../repositories/employee.repository.js";
-export const getEmployeeList = async (req: Request, res: Response) => {
+  createGroupRole,
+  deleteGroupRole,
+  getListGroupRole,
+  getGroupRoleById,
+  updateGroupRole,
+} from "../repositories/groupRole.repository.js";
+
+export const getListGroupRoleList = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -21,16 +20,11 @@ export const getEmployeeList = async (req: Request, res: Response) => {
       .json(APIResponse.error("Access token required"));
   }
   const data = req.body;
-  const reslut = await getListEmployee(data);
-  const count = await countListEmployee(data);
+  const reslut = await getListGroupRole(data);
 
-  res
-    .status(StatusCodes.OK)
-    .json(
-      APIResponse.successWithPaging(reslut, { ...data, total: count.total })
-    );
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
 };
-export const createDataEmployee = async (req: Request, res: Response) => {
+export const createDataGroupRole = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -40,33 +34,11 @@ export const createDataEmployee = async (req: Request, res: Response) => {
       .json(APIResponse.error("Access token required"));
   }
   const data = req.body;
+  const reslut = await createGroupRole(data);
 
-  // แปลงค่า string จาก FormData เป็น number
-  if (data.department_id) data.department_id = Number(data.department_id);
-  if (data.position_id) data.position_id = Number(data.position_id);
-  if (data.team_id) data.team_id = Number(data.team_id);
-  if (data.title) data.title = Number(data.title);
-  if (data.created_by) data.created_by = Number(data.created_by);
-  if (data.updated_by) data.updated_by = Number(data.updated_by);
-  if (data.role) data.role = Number(data.role);
-
-  // รองรับการ upload ผ่าน FormData
-  if (req.file) {
-    data.avatar = req.file.filename;
-  }
-
-  console.log("📤 Create Employee Data:", JSON.stringify(data, null, 2));
-
-  const reslut = await createEmployee(data);
-
-  res.status(StatusCodes.OK).json(
-    APIResponse.success({
-      ...reslut,
-      uploadedFile: req.file ? req.file.filename : null,
-    })
-  );
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
 };
-export const getDataEmployeeById = async (req: Request, res: Response) => {
+export const getDataGroupRoleById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -83,7 +55,7 @@ export const getDataEmployeeById = async (req: Request, res: Response) => {
       .status(StatusCodes.BAD_REQUEST)
       .json(
         APIResponse.error(
-          "Missing or invalid Employee ID",
+          "Missing or invalid Group role ID",
           StatusCodes.BAD_REQUEST
         )
       );
@@ -91,17 +63,17 @@ export const getDataEmployeeById = async (req: Request, res: Response) => {
 
   const id = Number(idParam); // convert เป็น number
 
-  const reslut = await getEmployeeById(id);
+  const reslut = await getGroupRoleById(id);
 
   if (!reslut) {
     return res
       .status(StatusCodes.NOT_FOUND)
-      .json(APIResponse.error("Employee not found", StatusCodes.NOT_FOUND));
+      .json(APIResponse.error("System Tools not found", StatusCodes.NOT_FOUND));
   }
 
   res.status(StatusCodes.OK).json(APIResponse.success(reslut));
 };
-export const updateEmployeeById = async (req: Request, res: Response) => {
+export const updateGroupRoleById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -126,31 +98,16 @@ export const updateEmployeeById = async (req: Request, res: Response) => {
 
   const id = Number(idParam); // convert เป็น number
   const data = req.body;
-
-  // รองรับทั้งการ upload ผ่าน FormData และ Base64 string
-  if (req.file) {
-    // กรณี upload ผ่าน FormData
-    data.avatar = req.file.filename;
-  } else if (data.avatar && typeof data.avatar === "object") {
-    // กรณีส่งมาเป็น file object (จะไม่ทำอะไร ให้ใช้ชื่อไฟล์เดิมจาก DB)
-    delete data.avatar;
-  }
-
-  const result = await updateEmployee(id, data);
+  const result = await updateGroupRole(id, data);
   if (!result) {
     return res
       .status(StatusCodes.NOT_FOUND)
-      .json(APIResponse.error("Workflow not found", StatusCodes.NOT_FOUND));
+      .json(APIResponse.error("System Tools not found", StatusCodes.NOT_FOUND));
   }
 
-  res.status(StatusCodes.OK).json(
-    APIResponse.success({
-      ...result,
-      uploadedFile: req.file ? req.file.filename : null,
-    })
-  );
+  res.status(StatusCodes.OK).json(APIResponse.success(result));
 };
-export const deleteEmployeeById = async (req: Request, res: Response) => {
+export const deleteGroupRoleById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
@@ -174,7 +131,7 @@ export const deleteEmployeeById = async (req: Request, res: Response) => {
   }
 
   const id = Number(idParam); // convert เป็น number
-  const result = await deleteEmployee(id);
+  const result = await deleteGroupRole(id);
 
   res.status(StatusCodes.OK).json(APIResponse.success(result));
 };

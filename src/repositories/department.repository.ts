@@ -69,9 +69,9 @@ export const getDepartmentById = async (id: number) => {
             COUNT (*) AS total,
             dt.department_id 
             from  department_team dt
-            left join employee e on dt.department_id = e.department_id
+            left join employee e on dt.department_id = e.department_id AND e.team_id = dt.id
             WHERE dt.name is not null
-            GROUP By dt.name
+            GROUP By dt.id
         ) AS x
         WHERE x.department_id = d.id
     ) AS team

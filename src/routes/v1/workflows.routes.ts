@@ -6,6 +6,7 @@ import {
   createWorkflow,
   deleteWorkflowById,
   duplicateDataWorkflow,
+  exportWorkflowReport,
   getPositionEmployeeListByWorkflowsId,
   getWorkflowById,
   getWorkflowList,
@@ -16,6 +17,7 @@ import {
 
 const router = Router();
 router.post("/list", getWorkflowList);
+router.post("/export/report", exportWorkflowReport);
 router.post("/import", importWorkflows);
 router.post("/", createWorkflow);
 router.post("/count/department", countDepartmentList);

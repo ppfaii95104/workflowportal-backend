@@ -6,10 +6,26 @@ import { dbConnection } from "../config/db.js";
 
 export const getUserDataByEmail = async (email: string) => {
   const [rows]: any[] = await dbConnection.query(
-    `SELECT e.*,p.name AS position_name , dt.name AS team_name,d.name AS department_name FROM employee e
+    `SELECT e.*,
+        p.name AS position_name,
+        dt.name AS team_name,
+        d.name AS department_name,
+              JSON_OBJECT(
+                'id',gr.id,
+                'name',gr.name ,
+                'workflow',gr.workflow ,
+                'department',gr.department,
+                'employee',gr.employee,
+                'system',gr.system,
+                'role_management',gr.role_management,
+                'user',gr.user
+              )
+            AS role
+    FROM employee e
     left join position p on p.id = e.position_id
     left join department_team dt  on dt.department_id  = e.department_id AND e.team_id = dt.id
     left join department d  on d.id  = e.department_id 
+    left join group_role gr on gr.id = e.role
     WHERE e.email = ?;
     `,
     [email]
@@ -19,10 +35,26 @@ export const getUserDataByEmail = async (email: string) => {
 
 export const getUserDataById = async (id: number | string) => {
   const [rows]: any[] = await dbConnection.query(
-    `SELECT e.*,p.name AS position_name , dt.name AS team_name,d.name AS department_name FROM employee e
+    `SELECT e.*,
+        p.name AS position_name,
+        dt.name AS team_name,
+        d.name AS department_name,
+              JSON_OBJECT(
+                'id',gr.id,
+                'name',gr.name ,
+                'workflow',gr.workflow ,
+                'employee',gr.employee,
+                'department',gr.department,
+                'system',gr.system,
+                'role_management',gr.role_management,
+                'user',gr.user
+              )
+            AS role
+    FROM employee e
     left join position p on p.id = e.position_id
     left join department_team dt  on dt.department_id  = e.department_id AND e.team_id = dt.id
     left join department d  on d.id  = e.department_id 
+    left join group_role gr on gr.id = e.role
     WHERE e.id = ?;
     `,
     [id]

@@ -9,6 +9,8 @@ export interface WorkflowFormData {
   name: string; // ชื่อ Workflow
   start_date: string; // วันที่เริ่มใช้ Workflow
   department_id: number;
+  department_name?: string; // ชื่อแผนก (จาก getWorkflowsById)
+  department_code?: string; // รหัสแผนก (จาก getWorkflowsById)
   responsible_position_id: number; // id ตำแหน่งผู้รับผิดชอบ
   responsible_id: number; // id ผู้รับผิดชอบ
   flow_type: "M" | "S"; // ประเภท Workflow
@@ -30,6 +32,9 @@ export interface WorkflowFormData {
   status: number;
   step: number;
   updated_by: number;
+  doc_id?: string; // รหัสเอกสาร (จาก getWorkflowsById)
+  created_at?: string; // วันที่สร้าง (จาก getWorkflowsById)
+  updated_at?: string; // วันที่แก้ไขล่าสุด (จาก getWorkflowsById)
 }
 
 export interface SystemUsage {
@@ -55,7 +60,7 @@ export interface WorkflowStep {
 
   // เฉพาะขั้นตอนที่มีเงื่อนไข
   conditions?: { detail: string; next_step: any }[];
-  next_step?: string | number;
+  next_steps?: { next_step: any }[];
   issues?: string;
   suggestions?: string;
   description?: string;

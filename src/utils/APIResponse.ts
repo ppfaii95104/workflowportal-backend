@@ -47,13 +47,11 @@ export class APIResponse<T> {
 
   // Method to create an error response
   static error(message: string, status: number = 500): APIResponse<null> {
-    return new APIResponse(status, message, null);
+    return new APIResponse(status, message, null, undefined, message);
+  }
+
+  // Method to create an error response with custom status
+  static errorWithStatus(message: string, status: number): APIResponse<null> {
+    return new APIResponse(status, message, null, undefined, message);
   }
 }
-
-// Example usage of APIResponse class
-const successResponse = APIResponse.success({ id: 1, name: "John Doe" });
-console.log(successResponse.toString());
-
-const errorResponse = APIResponse.error("User not found", 404);
-console.log(errorResponse.toString());

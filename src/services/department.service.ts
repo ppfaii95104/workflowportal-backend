@@ -273,6 +273,41 @@ export const getDataPositionById = async (req: Request, res: Response) => {
 
   res.status(StatusCodes.OK).json(APIResponse.success(reslut));
 };
+export const getDataTeamById = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+
+  if (!token) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json(APIResponse.error("Access token required"));
+  }
+  const idParam = req.params.id;
+
+  // ตรวจสอบว่า id มีค่าและเป็นตัวเลข
+  if (!idParam || isNaN(Number(idParam))) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json(
+        APIResponse.error(
+          "Missing or invalid Department ID",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+  }
+
+  const id = Number(idParam); // convert เป็น number
+
+  const reslut = await getTeamById(id);
+
+  if (!reslut) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json(APIResponse.error("Department not found", StatusCodes.NOT_FOUND));
+  }
+
+  res.status(StatusCodes.OK).json(APIResponse.success(reslut));
+};
 export const deleteDataPositionById = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>

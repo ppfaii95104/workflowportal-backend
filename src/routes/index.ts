@@ -7,6 +7,7 @@ import departmentRoutes from "./v1/department.routes.js";
 import employeeRoutes from "./v1/employee.routes.js";
 import userRoutes from "./v1/user.routes.js";
 import systemToolsRoutes from "./v1/systemTools.routes.js";
+import GroupRoleRoutes from "./v1/groupRole.routes.js";
 const router = Router();
 
 router.use("/workflow", workflowsRoutes);
@@ -16,4 +17,5 @@ router.use("/department", departmentRoutes);
 router.use("/employee", employeeRoutes);
 router.use("/user", userRoutes);
 router.use("/system", systemToolsRoutes);
+router.use("/group-role", GroupRoleRoutes);
 export default router;

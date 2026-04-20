@@ -19,8 +19,8 @@ const ACCESS_TOKEN_SECRET =
 const REFRESH_TOKEN_SECRET =
   process.env.REFRESH_TOKEN_SECRET ||
   "your_refresh_token_secret_key_change_this";
-const ACCESS_TOKEN_EXPIRE = "15m"; // Access token หมดอายุ 15 นาที
-const REFRESH_TOKEN_EXPIRE = "7d"; // Refresh token หมดอายุ 7 วัน
+const ACCESS_TOKEN_EXPIRE = "7d"; // Access token หมดอายุ 7 วัน
+const REFRESH_TOKEN_EXPIRE = "7d"; // Refresh token หมดอายุ 90 วัน (3 เดือน)
 
 interface TokenPayload {
   id: string;
@@ -49,7 +49,7 @@ const generateAccessToken = (user: { id: string; email: string }): string => {
       expiresIn: ACCESS_TOKEN_EXPIRE,
       issuer: "your-app-name",
       audience: "your-app-users",
-    }
+    },
   );
 };
 
@@ -68,14 +68,14 @@ const generateRefreshToken = (user: { id: string; email: string }): string => {
       expiresIn: REFRESH_TOKEN_EXPIRE,
       issuer: "your-app-name",
       audience: "your-app-users",
-    }
+    },
   );
 };
 
-// คำนวณวันหมดอายุ Refresh Token (7 วันจากวันนี้)
+// คำนวณวันหมดอายุ Refresh Token (90 วันจากวันนี้)
 const getRefreshTokenExpiry = (): Date => {
   const now = new Date();
-  now.setDate(now.getDate() + 7); // เพิ่ม 7 วัน
+  now.setDate(now.getDate() + 90); // เพิ่ม 90 วัน (3 เดือน)
   return now;
 };
 
@@ -84,6 +84,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const body = req.body;
     const email = body?.email ?? "";
+    console.log("🚀 ~ login ~ email:", email);
 
     if (!email) {
       return res
@@ -93,6 +94,7 @@ export const login = async (req: Request, res: Response) => {
 
     // หา user ในฐานข้อมูล
     const users = await getUserDataByEmail(email);
+    console.log("🚀 ~ login ~ users:", users);
 
     // ถ้าไม่พบ user ให้รีเทิร์น error
     if (!users) {
@@ -159,8 +161,10 @@ export const refreshToken = async (req: Request, res: Response) => {
 
     if (!tokenData) {
       return res
-        .status(StatusCodes.FORBIDDEN)
-        .json(APIResponse.error("Invalid refresh token"));
+        .status(StatusCodes.UNAUTHORIZED)
+        .json(
+          APIResponse.error("Invalid refresh token", StatusCodes.UNAUTHORIZED),
+        );
     }
 
     // ตรวจสอบว่า token หมดอายุหรือไม่
@@ -168,8 +172,13 @@ export const refreshToken = async (req: Request, res: Response) => {
       // ลบ token ที่หมดอายุออกจากฐานข้อมูล
       await deleteRefreshToken(refreshToken);
       return res
-        .status(StatusCodes.FORBIDDEN)
-        .json(APIResponse.error("Refresh token has expired"));
+        .status(StatusCodes.UNAUTHORIZED)
+        .json(
+          APIResponse.error(
+            "Refresh token has expired",
+            StatusCodes.UNAUTHORIZED,
+          ),
+        );
     }
 
     // ตรวจสอบ JWT signature และ payload
@@ -181,8 +190,13 @@ export const refreshToken = async (req: Request, res: Response) => {
           // ถ้า token ไม่ถูกต้อง ให้ลบออกจากฐานข้อมูล
           await deleteRefreshToken(refreshToken);
           return res
-            .status(StatusCodes.FORBIDDEN)
-            .json(APIResponse.error("Invalid refresh token signature"));
+            .status(StatusCodes.UNAUTHORIZED)
+            .json(
+              APIResponse.error(
+                "Invalid refresh token signature",
+                StatusCodes.UNAUTHORIZED,
+              ),
+            );
         }
 
         const payload = decoded as TokenPayload;
@@ -193,8 +207,10 @@ export const refreshToken = async (req: Request, res: Response) => {
         if (!user) {
           await deleteRefreshToken(refreshToken);
           return res
-            .status(StatusCodes.FORBIDDEN)
-            .json(APIResponse.error("User not found"));
+            .status(StatusCodes.UNAUTHORIZED)
+            .json(
+              APIResponse.error("User not found", StatusCodes.UNAUTHORIZED),
+            );
         }
 
         // สร้าง Access Token ใหม่
@@ -207,7 +223,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         };
 
         res.status(StatusCodes.OK).json(APIResponse.success(responseData));
-      }
+      },
     );
   } catch (error) {
     console.error("Error in refreshToken:", error);
@@ -241,7 +257,7 @@ export const logout = async (req: Request, res: Response) => {
       APIResponse.success({
         message: "Logout successful",
         loggedOut: true,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error in logout:", error);
@@ -276,7 +292,7 @@ export const logoutAllDevices = async (req: Request, res: Response) => {
       APIResponse.success({
         message: "Logged out from all devices successfully",
         loggedOutFromAllDevices: true,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error in logoutAllDevices:", error);
@@ -290,7 +306,7 @@ export const logoutAllDevices = async (req: Request, res: Response) => {
 export const authenticateAccessToken = (
   req: Request,
   res: Response,
-  next: Function
+  next: Function,
 ) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
@@ -298,22 +314,27 @@ export const authenticateAccessToken = (
   if (!token) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json(APIResponse.error("Access token required"));
+      .json(
+        APIResponse.error("Access token required", StatusCodes.UNAUTHORIZED),
+      );
   }
 
   jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) {
       let errorMessage = "Invalid access token";
+      let statusCode = StatusCodes.FORBIDDEN;
 
       if (err.name === "TokenExpiredError") {
         errorMessage = "Access token has expired";
+        statusCode = StatusCodes.UNAUTHORIZED; // ส่ง 401 เพื่อให้ frontend refresh token
       } else if (err.name === "JsonWebTokenError") {
         errorMessage = "Invalid access token format";
+        statusCode = StatusCodes.FORBIDDEN;
       }
 
       return res
-        .status(StatusCodes.FORBIDDEN)
-        .json(APIResponse.error(errorMessage));
+        .status(statusCode)
+        .json(APIResponse.error(errorMessage, statusCode));
     }
 
     // เพิ่มข้อมูล user ลงใน request object
@@ -326,6 +347,7 @@ export const authenticateAccessToken = (
 export const getCurrentUser = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
+    console.log("🚀 ~ getCurrentUser ~ userId:", userId);
 
     if (!userId) {
       return res
@@ -341,11 +363,23 @@ export const getCurrentUser = async (req: Request, res: Response) => {
         .json(APIResponse.error("User not found"));
     }
 
-    // ส่งข้อมูล user (ไม่ส่ง sensitive data)
+    // ส่งข้อมูล user ครบถ้วน (ไม่ส่ง sensitive data)
     const userData = {
       id: user.id,
       email: user.email,
-      // เพิ่มข้อมูลอื่นๆ ที่ต้องการส่งกลับ
+      name_en: user.name_en,
+      name_th: user.name_th,
+      position_name: user.position_name,
+      team_name: user.team_name,
+      department_name: user.department_name,
+      status: user.status,
+      position_id: user.position_id,
+      team_id: user.team_id,
+      department_id: user.department_id,
+      avatar: user.avatar,
+      nickname: user.nickname,
+      title: user.title,
+      role: typeof user.role === "string" ? JSON.parse(user.role) : user.role,
     };
 
     res.status(StatusCodes.OK).json(APIResponse.success(userData));
@@ -367,7 +401,7 @@ export const checkAuthStatus = async (req: Request, res: Response) => {
         APIResponse.success({
           isAuthenticated: false,
           user: null,
-        })
+        }),
       );
     }
 
@@ -375,8 +409,9 @@ export const checkAuthStatus = async (req: Request, res: Response) => {
 
     const responseData = {
       isAuthenticated: !!user,
-      user: user
-        ? {
+      user:
+        user ?
+          {
             id: user.id,
             email: user.email,
           }
